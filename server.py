@@ -1,6 +1,8 @@
 import os.path, sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+os.environ['PYTHON_EGG_CACHE'] = '/webeggs'
+
 import config
 from turkic.server import handler, application
 from turkic.database import session
@@ -121,6 +123,25 @@ def savejob(id, tracks):
 
     session.add(job)
     session.commit()
+
+@handler(type="image/jpeg")
+def test():
+    f = open('/home/user/vatic/public/box.jpg', 'rb')
+    cont = f.read()
+    #if 'wsgi.file_wrapper' in environ:
+    #return environ['wsgi.file_wrapper'](f, 1000000)
+    #else:
+    return cont
+    #return iter(lambda: f.read(4096), '')#([("Content-Type", "image/jpeg")], cont)
+    #f.read(1)
+    #return "aaa" #"here" + str(len(data))
+    #sendfile('/home/user/vatic/public/box.jpg')
+
+@handler(type="image/jpeg", post = "json")
+def sendframe(id, data):
+    f = open('/home/user/vatic/public/box.jpg', 'rb')
+    cont = f.read()
+    return cont
 
 @handler(post = "json")
 def savejob1(id, data):

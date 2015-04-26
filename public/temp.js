@@ -79,8 +79,7 @@ function ui_setup(job)
               '<li><code>d</code>  jump backward 5 frames</li>' +
               '<li><code>v</code>  step forward 1 frame</li>' +
               '<li><code>c</code>  step backward 1 frame</li>' +
-              '</ul>'+
-
+              '</ul>' +
               //'<img src="body_joint_fig.jpg" display="inline" width="350px"></div>' +
               '<img src="boxmodel.png" display="inline" width="350px"></div>' +
               "</td>" +
@@ -687,32 +686,15 @@ function ui_setupsubmit(job, tracks, player)
             /*var a = tracks;
             var b = job;
             var c = player;*/
-
-            var url = server_geturl("sendframe", [job.jobid]);
-            console.log("Server post: " + url);
-            data = JSON.stringify(tracks.tracks.filter(function(tr) {
-                   return (!tr.deleted) && tr.handle.is(":visible");
-               }).map(function(tr) {
-                   return {label : tr.label, position:  tr.pollposition()};
-               }));
-
-            var req = new XMLHttpRequest();
-            req.open("POST", url, true);
-            req.contentType = "text/json";
-            req.responseType = "arraybuffer";
-
-            req.onload = function (oEvent) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    $("<image height='100' width='100'/>").appendTo(document.body).attr("src", "data:image/jpeg" + e.target.result.substr(5));
-
-                };
-                var blob = new Blob([req.response]);
-                reader.readAsDataURL(blob);
-            };
-
-            req.send(data);
-
+            server_post("sendframe", [job.jobid],
+                        JSON.stringify(tracks.tracks.filter(function(tr) {
+                            return (!tr.deleted) && tr.handle.is(":visible");
+                        }).map(function(tr) {
+                            return {label : tr.label, position:  tr.pollposition()};
+                        })), // tracks.serialize()
+                        function(data) {
+                            console.log(data);
+                        });
         });
 }
 
