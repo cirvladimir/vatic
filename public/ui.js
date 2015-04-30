@@ -45,6 +45,8 @@ function ui_setup(job)
         job.inactive = 0;
     });
 
+    screen.css("width", "100%");
+
     $("<table>" +
         "<tr>" +
             "<td><div id='instructionsbutton' class='button'>Instructions</div>" +
@@ -59,6 +61,7 @@ function ui_setup(job)
         "<tr>" +
               "<td><div id='videoframe'></div></td>" +
               "<td rowspan='4'><div id='sidebar'></div></td>" +
+              "<td>" + '<img src="boxmodel.png" display="inline" width="350px"></div>' + "</td>" +
           "</tr>" +
           "<tr>" +
               "<td><div id='bottombar'></div></td>" +
@@ -82,7 +85,7 @@ function ui_setup(job)
               '</ul>'+
 
               //'<img src="body_joint_fig.jpg" display="inline" width="350px"></div>' +
-              '<img src="boxmodel.png" display="inline" width="350px"></div>' +
+              //'<img src="boxmodel.png" display="inline" width="350px"></div>' +
               "</td>" +
           "</tr>" +
 
@@ -704,7 +707,9 @@ function ui_setupsubmit(job, tracks, player)
             req.onload = function (oEvent) {
                 var reader = new FileReader();
                 reader.onload = function(e) {
-                    $("<image height='100' width='100'/>").appendTo(document.body).attr("src", "data:image/jpeg" + e.target.result.substr(5));
+                    //$("<image height='100' width='100'/>").appendTo(document.body).attr("src", "data:image/jpeg" + e.target.result.substr(5));
+                    $("#videoframe").css("background-image", "url(\"" + "data:image/jpeg" + e.target.result.substr(5) + "\")")
+                        .css("background-size", "100% 100%");
 
                 };
                 var blob = new Blob([req.response]);
