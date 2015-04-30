@@ -49,6 +49,7 @@ function ui_setup(job)
 
     $("<table>" +
         "<tr>" +
+            "<td style='width: 300px'> </td>" +
             "<td><div id='instructionsbutton' class='button'>Instructions</div>" +
             //<2012-12-03> modified 3 lines for Ben Sapp's application
             //"<div id='instructions'>Annotate every visible body joints for the <strong>" +
@@ -59,18 +60,21 @@ function ui_setup(job)
             "<td><div id='topbar'></div></td>" +
         "</tr>" +
         "<tr>" +
+              "<td>" + '<img src="boxmodel.png" display="inline" width="350px"></div>' + "</td>" +
               "<td><div id='videoframe'></div></td>" +
               "<td rowspan='4'><div id='sidebar'></div></td>" +
-              "<td>" + '<img src="boxmodel.png" display="inline" width="350px"></div>' + "</td>" +
           "</tr>" +
           "<tr>" +
+            "<td></td>" +
               "<td><div id='bottombar'></div></td>" +
           "</tr>" +
           "<tr>" +
+            "<td></td>" +
               "<td><div id='advancedoptions'></div>" +
               "</td>" +
           "</tr>" +
           "<tr>" +
+            "<td></td>" +
               "<td><!--<div>Comments:</div>-->" +
               "<textarea id='commentarea' />" +
               "<div id='submitbar'></div><br/><br/>"+
@@ -693,11 +697,12 @@ function ui_setupsubmit(job, tracks, player)
 
             var url = server_geturl("sendframe", [job.jobid]);
             console.log("Server post: " + url);
-            data = JSON.stringify(tracks.tracks.filter(function(tr) {
+            data = JSON.stringify({ frame: player.frame, tracks: tracks.tracks.filter(function(tr) {
                    return (!tr.deleted) && tr.handle.is(":visible");
                }).map(function(tr) {
                    return {label : tr.label, position:  tr.pollposition()};
-               }));
+               })});
+            var a = player;
 
             var req = new XMLHttpRequest();
             req.open("POST", url, true);

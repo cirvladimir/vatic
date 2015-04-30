@@ -139,6 +139,7 @@ def test():
 
 @handler(type="image/jpeg", post = "json")
 def sendframe(id, data):
+    print(str(data))
     f = open('/home/user/vatic/public/box.jpg', 'rb')
     cont = f.read()
     return cont
