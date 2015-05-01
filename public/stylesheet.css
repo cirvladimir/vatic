@@ -444,6 +444,11 @@ code
     width: 300px;
 }
 
+.main-work-div .sidebar-div .button
+{
+    margin: 10px;
+}
+
 .main-work-div>div
 {
     margin-left: 20px;

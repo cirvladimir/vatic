@@ -117,8 +117,7 @@ function ui_setup(job)
       "</div>").appendTo(screen).css("width", "100%");
 
 
-    $(".sidebar-div").append("<div class='button' id='newobjectbutton'>New Joint</div></div>" +
-            "<div id='newobjectcontainer'>");  
+    $(".sidebar-div").append("<div id='newobjectcontainer'></div>");
 
 
     $("#videoframe").css({"width": job.width + "px",
@@ -197,9 +196,10 @@ function ui_setup(job)
     "</div>");
 
 
-    $(".sidebar-div").append("<div id='submitbutton' class='button'>Submit HIT</div>");
+    $(".sidebar-div").prepend("<div class='button' id='newobjectbutton'>New Joint</div>");
+    $(".sidebar-div").prepend("<div id='submitbutton' class='button'>Submit HIT</div>");
 
-    $(".sidebar-div").append("<div id='sendframebutton' class='button'>Send Frame</div>");
+    $(".sidebar-div").prepend("<div id='sendframebutton' class='button'>Send Frame</div>");
 
     if (mturk_isoffline())
 	{
