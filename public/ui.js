@@ -47,53 +47,78 @@ function ui_setup(job)
 
     screen.css("width", "100%");
 
-    $("<table>" +
-        "<tr>" +
-            "<td style='width: 300px'> </td>" +
-            "<td><div id='instructionsbutton' class='button'>Instructions</div>" +
-            //<2012-12-03> modified 3 lines for Ben Sapp's application
-            //"<div id='instructions'>Annotate every visible body joints for the <strong>" +
-			//job.action.replace(/_/g, " ") +
-			//"</strong> action across the entire video." +
-            "<div id='instructions'>Annotate every visible upper body joints across the entire video" +
-            "<br/> <strong> for the person marked by the green box in the small image on the right side </strong> </td>" +
-            "<td><div id='topbar'></div></td>" +
-        "</tr>" +
-        "<tr>" +
-              "<td>" + '<img src="boxmodel.png" display="inline" width="350px"></div>' + "</td>" +
-              "<td><div id='videoframe'></div></td>" +
-              "<td rowspan='4'><div id='sidebar'></div></td>" +
-          "</tr>" +
-          "<tr>" +
-            "<td></td>" +
-              "<td><div id='bottombar'></div></td>" +
-          "</tr>" +
-          "<tr>" +
-            "<td></td>" +
-              "<td><div id='advancedoptions'></div>" +
-              "</td>" +
-          "</tr>" +
-          "<tr>" +
-            "<td></td>" +
-              "<td><!--<div>Comments:</div>-->" +
-              "<textarea id='commentarea' />" +
-              "<div id='submitbar'></div><br/><br/>"+
-              '<div><ul class="keyboardshortcuts" display="inline" >' +
-              '<li><code>n</code>  creates a new human joint</li>' +
-              '<li><code>t</code>  toggles play/pause on the video</li>' +
-              '<li><code>r</code>  rewinds the video to the start</li>' +
-              '<li><code>f</code>  jump forward 5 frames</li>' +
-              '<li><code>d</code>  jump backward 5 frames</li>' +
-              '<li><code>v</code>  step forward 1 frame</li>' +
-              '<li><code>c</code>  step backward 1 frame</li>' +
-              '</ul>'+
+    $("<div class='main-work-div'>" +
+//        "<tr>" +
+//            "<td></td>" +
+//            "<td><div id='instructionsbutton' class='button'>Instructions</div>" +
+//            //<2012-12-03> modified 3 lines for Ben Sapp's application
+//            //"<div id='instructions'>Annotate every visible body joints for the <strong>" +
+//			//job.action.replace(/_/g, " ") +
+//			//"</strong> action across the entire video." +
+//            "<div id='instructions'>Annotate every visible upper body joints across the entire video" +
+//            "<br/> <strong> for the person marked by the green box in the small image on the right side </strong> </td>" +
+//            "<td><div id='topbar'></div></td>" +
+//        "</tr>" +
+        "<div class='box-images-div'>" +
+           '<img src="labelGT.jpg" display="inline" width="350px"><br/>' +
+                               '<img src="labelGT2.jpg" display="inline" width="350px">' +
+        "</div>" +
+        "<div class='main-video-div'>" +
+            "<div id='videoframe'></div><div id='bottombar'></div>" +
+            "<div id='advancedoptions'></div>" +
+            "<table class='shortcut-table'><tr><td colspan=4>Key Shortcuts</td></tr>" +
+                "<tr><th>Key</th><th>Action</th><th>Key</th><th>Action</th></tr>" +
+                "<tr><td>n</td><td>creates a new human joint</td>" + 
+                "<td>t</td><td>toggles play/pause on the video</td></tr>" +
+                "<tr><td>r</td><td>rewinds the video to the start</td>" + 
+                "<td>f</td><td>jump forward 5 frames</td></tr>" +
+                "<tr><td>d</td><td>jump backward 5 frames</td>" + 
+                "<td>v</td><td>step forward 1 frame</td></tr>" +
+                "<tr><td>c</td><td>step backward 1 frame</td>" + 
+                "<td></td><td></td></tr>" +
+            "</table>" +
+        "</div>" +
+        "<div class='sidebar-div'>" +
+            "<div id='sidebar'></div>" +
+        "</div>" +
 
-              //'<img src="body_joint_fig.jpg" display="inline" width="350px"></div>' +
-              //'<img src="boxmodel.png" display="inline" width="350px"></div>' +
-              "</td>" +
-          "</tr>" +
 
-      "</table>").appendTo(screen).css("width", "100%");
+
+//        "<tr>" +
+//              "<td>" + + "</td>" +
+//              "<td></td>" +
+//              "<td rowspan='4'></td>" +
+//          "</tr>" +
+//          "<tr>" +
+//            "<td></td>" +
+//
+//              "</td>" +
+//          "</tr>" +
+//          "<tr>" +
+//            "<td></td>" +
+//              "<td><!--<div>Comments:</div>-->" +
+//              "<textarea id='commentarea' />" +
+//              "<div id='submitbar'></div><br/><br/>"+
+//              '<div><ul class="keyboardshortcuts" display="inline" >' +
+//              '<li><code>n</code>  creates a new human joint</li>' +
+//              '<li><code>t</code>  toggles play/pause on the video</li>' +
+//              '<li><code>r</code>  rewinds the video to the start</li>' +
+//              '<li><code>f</code>  jump forward 5 frames</li>' +
+//              '<li><code>d</code>  jump backward 5 frames</li>' +
+//              '<li><code>v</code>  step forward 1 frame</li>' +
+//              '<li><code>c</code>  step backward 1 frame</li>' +
+//              '</ul></div>'+
+//
+//              //'<img src="body_joint_fig.jpg" display="inline" width="350px"></div>' +
+//              //'<img src="boxmodel.png" display="inline" width="350px"></div>' +
+//              "</td>" +
+//          "</tr>" +
+
+      "</div>").appendTo(screen).css("width", "100%");
+
+
+    $(".sidebar-div").append("<div class='button' id='newobjectbutton'>New Joint</div></div>" +
+            "<div id='newobjectcontainer'>");  
 
 
     $("#videoframe").css({"width": job.width + "px",
@@ -113,9 +138,6 @@ function ui_setup(job)
     $("#bottombar").append("<div class='button' id='backwardbutton'> &nbsp;  </div> ");
     $("#bottombar").append("<div class='button' id='playbutton'>Play</div> ");
     $("#bottombar").append("<div class='button' id='forwardbutton'> &nbsp; </div> ");
-
-    $("#topbar").append("<div id='newobjectcontainer'>" +
-        "<div class='button' id='newobjectbutton'>New Joint</div></div>");
 
 
     // subject orientation radio box, added by menglong
@@ -175,9 +197,9 @@ function ui_setup(job)
     "</div>");
 
 
-    $("#submitbar").append("<div id='submitbutton' class='button'>Submit HIT</div>");
+    $(".sidebar-div").append("<div id='submitbutton' class='button'>Submit HIT</div>");
 
-    $("#submitbar").append("<div id='sendframebutton' class='button'>Send Frame</div>");
+    $(".sidebar-div").append("<div id='sendframebutton' class='button'>Send Frame</div>");
 
     if (mturk_isoffline())
 	{

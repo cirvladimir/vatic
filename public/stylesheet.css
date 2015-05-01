@@ -428,3 +428,53 @@ code
     position : relative;
     z-index : 101;
 }
+
+
+/*  MAIN VIDEO PLACE AREA STYLE */
+
+.main-work-div
+{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.main-work-div .sidebar-div
+{
+    width: 300px;
+}
+
+.main-work-div>div
+{
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.shortcut-table
+{
+    border-collapse:collapse;
+}
+
+.shortcut-table tr:nth-child(1) td
+{
+    text-align: center;
+}
+.shortcut-table td:nth-child(even),
+    .shortcut-table th:nth-child(even)
+{
+    background-color: #edf;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

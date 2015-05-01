@@ -139,8 +139,22 @@ def test():
 
 @handler(type="image/jpeg", post = "json")
 def sendframe(id, data):
-    print(str(data))
-    f = open('/home/user/vatic/public/box.jpg', 'rb')
+    str_xys   = ""
+    num_points = len(data['tracks'])
+    print("------------------------------------")
+    print("------------------------------------")
+    print("------------------------------------")
+    for labels in data['tracks']:
+        tmp = "%.2f %.2f " % (labels[str('position')][str('xtl')], labels[str('position')][str('ytl')])
+        str_xys = str_xys + (str( tmp))
+        # print(labels[str('label')])
+    args = "/home/user/ObjRecognition/build/client  1 %d 1 2 3 4 %s" % ( num_points,str_xys)
+    print(args)
+    print("------------------------------------")
+    print("------------------------------------")
+    print("------------------------------------")
+    os.system(args)
+    f = open('/home/user/ObjRecognition/build/dartpose.jpg', 'rb')
     cont = f.read()
     return cont
 
