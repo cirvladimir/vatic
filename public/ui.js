@@ -35,6 +35,20 @@ function ui_build(job)
             }
         }
     },60000);*/
+    var getParam = function(name, url) {
+        var ind = url.indexOf(name);
+        if (ind == -1)
+            return null;
+        var begInd = ind;
+        ind += name.length + 1;
+        while ((ind < url.length) && (url[ind] != '&'))
+            ind++;
+        return url.substring(begInd + name.length + 1, ind);
+    };
+    var frame = getParam("frame", window.location.href);
+    if (frame != null) {
+        player.seek(frame);
+    }
 }
 
 function ui_setup(job)
@@ -717,33 +731,49 @@ function ui_setupsubmit(job, tracks, player)
             var b = job;
             var c = player;*/
 
-            var url = server_geturl("sendframe", [job.jobid]);
-            console.log("Server post: " + url);
-            data = JSON.stringify({ frame: player.frame, tracks: tracks.tracks.filter(function(tr) {
+            var data = JSON.stringify({ frame: player.frame, tracks: tracks.tracks.filter(function(tr) {
                    return (!tr.deleted) && tr.handle.is(":visible");
                }).map(function(tr) {
                    return {label : tr.label, position:  tr.pollposition()};
                })});
-            var a = player;
 
-            var req = new XMLHttpRequest();
-            req.open("POST", url, true);
-            req.contentType = "text/json";
-            req.responseType = "arraybuffer";
-
-            req.onload = function (oEvent) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    //$("<image height='100' width='100'/>").appendTo(document.body).attr("src", "data:image/jpeg" + e.target.result.substr(5));
-                    $("#videoframe").css("background-image", "url(\"" + "data:image/jpeg" + e.target.result.substr(5) + "\")")
+            var ws = new WebSocket("ws://localhost:8532");
+            ws.onmessage = function(msg) {
+                $("#videoframe").css("background-image", "url(\"" + "data:image/jpeg;base64," + msg.data + "\")")
                         .css("background-size", "100% 100%");
-
-                };
-                var blob = new Blob([req.response]);
-                reader.readAsDataURL(blob);
+                ws.close();
+            };
+            ws.onopen = function() {
+                ws.send(data);
             };
 
-            req.send(data);
+            
+            // var url = server_geturl("sendframe", [job.jobid]);
+            // console.log("Server post: " + url);
+            // var data = JSON.stringify({ frame: player.frame, tracks: tracks.tracks.filter(function(tr) {
+            //        return (!tr.deleted) && tr.handle.is(":visible");
+            //    }).map(function(tr) {
+            //        return {label : tr.label, position:  tr.pollposition()};
+            //    })});
+
+            // var req = new XMLHttpRequest();
+            // req.open("POST", url, true);
+            // req.contentType = "text/json";
+            // req.responseType = "arraybuffer";
+
+            // req.onload = function (oEvent) {
+            //     var reader = new FileReader();
+            //     reader.onload = function(e) {
+            //         //$("<image height='100' width='100'/>").appendTo(document.body).attr("src", "data:image/jpeg" + e.target.result.substr(5));
+            //         $("#videoframe").css("background-image", "url(\"" + "data:image/jpeg" + e.target.result.substr(5) + "\")")
+            //             .css("background-size", "100% 100%");
+
+            //     };
+            //     var blob = new Blob([req.response]);
+            //     reader.readAsDataURL(blob);
+            // };
+
+            // req.send(data);
 
         });
 }

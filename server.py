@@ -8,6 +8,7 @@ from turkic.server import handler, application
 from turkic.database import session
 import cStringIO
 from models import *
+import _mysql
 
 import logging
 logger = logging.getLogger("vatic.server")
@@ -141,18 +142,30 @@ def test():
 def sendframe(id, data):
     str_xys   = ""
     num_points = len(data['tracks'])
-    print("------------------------------------")
-    print("------------------------------------")
-    print("------------------------------------")
+    # print("------------------------------------")
+    # print("------------------------------------")
+    # print("------------------------------------")
+    con = _mysql.connect('localhost', 'root', '', 'vatic')
+    point_inds = ""
     for labels in data['tracks']:
+        # get label index
+        con.query("select text from labels where id=%s" % labels['label'])
+        res = con.store_result()
+        if (res.num_rows() == 0): # no such point in db
+            num_points = num_points - 1
+            continue
+        label_name = res.fetch_row()[0][0]
+        point_inds += " %s" % label_name[len(label_name) - 1] # assumes points are named something like Point3
         tmp = "%.2f %.2f " % (labels[str('position')][str('xtl')], labels[str('position')][str('ytl')])
         str_xys = str_xys + (str( tmp))
+        
         # print(labels[str('label')])
-    args = "/home/user/ObjRecognition/build/client  1 %d 1 2 3 4 %s" % ( num_points,str_xys)
-    print(args)
-    print("------------------------------------")
-    print("------------------------------------")
-    print("------------------------------------")
+    args = "/home/user/ObjRecognition/build/client  %d %d %s %s" % (data['frame'], num_points, point_inds, str_xys)
+    
+    # print(args)
+    # print("------------------------------------")
+    # print("------------------------------------")
+    # print("------------------------------------")
     os.system(args)
     f = open('/home/user/ObjRecognition/build/dartpose.jpg', 'rb')
     cont = f.read()
