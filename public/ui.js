@@ -214,7 +214,7 @@ function ui_setup(job)
     $(".sidebar-div").prepend("<div class='button' id='newobjectbutton'>New Joint</div>");
     $(".sidebar-div").prepend("<div id='submitbutton' class='button'>Submit HIT</div>");
 
-    $(".sidebar-div").prepend($("<div id='okframebutton' class='button'>Frame OK</div>").css("display", "none"));
+    $(".sidebar-div").prepend($("<div id='nextFrame' class='button'>nextFrame</div>").css("display", "none"));
     $(".sidebar-div").prepend("<div id='sendframebutton' class='button'>Send Frame</div>");
 
     if (mturk_isoffline())
@@ -725,10 +725,10 @@ var ws_handler = function(msg) {
     if (msg.data[0] == NEW_IMAGE) {
         $("#videoframe").css("background-image", "url(\"" + "data:image/jpeg;base64," + msg.data.substr(1) + "\")")
             .css("background-size", "100% 100%");
-        $("#okframebutton").css("display", "inline-block");
+        $("#nextFrame").css("display", "inline-block");
     }
     if (msg.data[0] == SEEK_FRAME) {
-        $("#okframebutton").css("display", "none");
+        $("#nextFrame").css("display", "none");
         var frame = JSON.parse(msg.data.substr(1)).frame;
     }
 };
@@ -760,6 +760,12 @@ function ui_setupsubmit(job, tracks, player)
         if (ui_disabled) return;
         ui_submit(job, tracks);
     });
+    $("#nextFrame").button()
+        .click(function() {
+            player.seek(player.frame + 5);
+            data = JSON.stringify({frame: player.frame, tracks: []});
+            sendMessage(NEW_LABELS + data);
+        });
     $("#sendframebutton").button()
         .click(function() {
             /*var a = tracks;
