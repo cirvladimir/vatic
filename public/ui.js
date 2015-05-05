@@ -5,6 +5,7 @@ function ui_build(job)
     var screen = ui_setup(job);
     var videoframe = $("#videoframe");
     var player = new VideoPlayer(videoframe, job);
+    window.player = player;
     var tracks = new TrackCollection(player, job);
     var objectui = new TrackObjectUI($("#newobjectbutton"), $("#objectcontainer"), videoframe, job, player, tracks);
 
@@ -80,7 +81,7 @@ function ui_setup(job)
         "<div class='main-video-div'>" +
             "<div id='videoframe'></div><div id='bottombar'></div>" +
             "<div id='advancedoptions'></div>" +
-            "<table class='shortcut-table'><tr><td colspan=4>Key Shortcuts</td></tr>" +
+            "<table style='display: none' class='shortcut-table'><tr><td colspan=4>Key Shortcuts</td></tr>" +
                 "<tr><th>Key</th><th>Action</th><th>Key</th><th>Action</th></tr>" +
                 "<tr><td>n</td><td>creates a new human joint</td>" + 
                 "<td>t</td><td>toggles play/pause on the video</td></tr>" +
@@ -195,30 +196,30 @@ function ui_setup(job)
 
     $("#advancedoptions").append(
     "<div id='speedcontrol'>" +
-    "<input type='radio' name='speedcontrol' " +
-        "value='5,1' id='speedcontrolslower'>" +
-    "<label for='speedcontrolslower'>Slower</label>" +
-    "<input type='radio' name='speedcontrol' " +
-        "value='15,1' id='speedcontrolslow' checked='checked'>" +
-    "<label for='speedcontrolslow'>Slow</label>" +
-    "<input type='radio' name='speedcontrol' " +
-        "value='30,1' id='speedcontrolnorm'>" +
-    "<label for='speedcontrolnorm'>Normal</label>" +
-    "<input type='radio' name='speedcontrol' " +
-        "value='90,1' id='speedcontrolfast'>" +
-    "<label for='speedcontrolfast'>Fast</label>" +
+        "<input type='radio' name='speedcontrol' " +
+            "value='5,1' id='speedcontrolslower'>" +
+        "<label for='speedcontrolslower'>Slower</label>" +
+        "<input type='radio' name='speedcontrol' " +
+            "value='15,1' id='speedcontrolslow' checked='checked'>" +
+        "<label for='speedcontrolslow'>Slow</label>" +
+        "<input type='radio' name='speedcontrol' " +
+            "value='30,1' id='speedcontrolnorm'>" +
+        "<label for='speedcontrolnorm'>Normal</label>" +
+        "<input type='radio' name='speedcontrol' " +
+            "value='90,1' id='speedcontrolfast'>" +
+        "<label for='speedcontrolfast'>Fast</label>" +
     "</div>");
 
 
     $(".sidebar-div").prepend("<div class='button' id='newobjectbutton'>New Joint</div>");
     $(".sidebar-div").prepend("<div id='submitbutton' class='button'>Submit HIT</div>");
 
+    $(".sidebar-div").prepend($("<div id='okframebutton' class='button'>Frame OK</div>").css("display", "none"));
     $(".sidebar-div").prepend("<div id='sendframebutton' class='button'>Send Frame</div>");
 
     if (mturk_isoffline())
 	{
 		$("#submitbutton").html("Save Work");
-		$("#sendframebutton").html("Send Frame");
 		//$("#submitbar").append("<div id='nextbutton' class='button'>next</div>");
     }
 
@@ -715,6 +716,40 @@ function ui_loadprevious(job, objectui)
     });
 }
 
+var NEW_LABELS = 'a';
+var FRAME_OK = 'b';
+var NEW_IMAGE = 'c';
+var SEEK_FRAME = 'd';
+var serv_ws = new WebSocket("ws://localhost:8532");
+var ws_handler = function(msg) {
+    if (msg.data[0] == NEW_IMAGE) {
+        $("#videoframe").css("background-image", "url(\"" + "data:image/jpeg;base64," + msg.data.substr(1) + "\")")
+            .css("background-size", "100% 100%");
+        $("#okframebutton").css("display", "inline-block");
+    }
+    if (msg.data[0] == SEEK_FRAME) {
+        $("#okframebutton").css("display", "none");
+        var frame = JSON.parse(msg.data.substr(1)).frame;
+    }
+};
+serv_ws.onmessage = ws_handler;
+var sendMessage = function(data) {
+    if (serv_ws.readyState == serv_ws.OPEN)
+        serv_ws.send(data);
+    else if (serv_ws.readyState == serv_ws.CONNECTING) {
+        var prevOnOpen = serv_ws.onopen;
+        serv_ws.onopen = function() {
+            if (prevOnOpen != null)
+                prevOnOpen();
+            serv_ws.send(data);
+        };
+    } else {
+        serv_ws = new WebSocket("ws://localhost:8532");
+        serv_ws.onmessage = ws_handler;
+        sendMessage(data);
+    }
+};
+
 function ui_setupsubmit(job, tracks, player)
 {
     $("#submitbutton").button({
@@ -732,20 +767,13 @@ function ui_setupsubmit(job, tracks, player)
             var c = player;*/
 
             var data = JSON.stringify({ frame: player.frame, tracks: tracks.tracks.filter(function(tr) {
-                   return (!tr.deleted) && tr.handle.is(":visible");
+                    return (!tr.deleted) && tr.handle.is(":visible");
                }).map(function(tr) {
-                   return {label : tr.label, position:  tr.pollposition()};
+                    var pos = tr.pollposition();
+                    return {label : tr.label, position: {x : (pos.xtl + pos.xbr) / 2 / job.width,
+                        y : (pos.ytl + pos.ybr) / 2 / job.height } };
                })});
-
-            var ws = new WebSocket("ws://localhost:8532");
-            ws.onmessage = function(msg) {
-                $("#videoframe").css("background-image", "url(\"" + "data:image/jpeg;base64," + msg.data + "\")")
-                        .css("background-size", "100% 100%");
-                ws.close();
-            };
-            ws.onopen = function() {
-                ws.send(data);
-            };
+            sendMessage(NEW_LABELS + data);
 
             
             // var url = server_geturl("sendframe", [job.jobid]);
