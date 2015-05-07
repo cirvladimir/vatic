@@ -87,6 +87,7 @@ class VaticServer(WebSocket):
 		tracker_socket.send("%d %d %s %s" % (data['frame'] + 1, num_points, point_inds, str_xys))
 		img_size_buff = tracker_socket.recv(4)
 		img_size = (ord(img_size_buff[0]) << 24) + (ord(img_size_buff[1]) << 16) + (ord(img_size_buff[2]) << 8)+ (ord(img_size_buff[3]))
+		print(img_size)
 		cont = tracker_socket.recv(img_size)
 		tracker_socket.close()
 		#args = "/home/user/ObjRecognition/build/client  %d %d %s %s" % (data['frame'], num_points, point_inds, str_xys)
@@ -101,7 +102,8 @@ class VaticServer(WebSocket):
 
 		# f = open('/home/user/ObjRecognition/build/dartpose.jpg', 'rb')
 		# cont = f.read()
-		self.sendMessage(NEW_IMAGE + base64.b64encode(cont))
+		b64img = base64.b64encode(cont)
+		self.sendMessage(NEW_IMAGE + b64img)
 
 	def handleFrameOkayed(self):
 		self.sendMessage(SEEK_FRAME + "{frame:100}")

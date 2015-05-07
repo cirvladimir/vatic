@@ -109,6 +109,7 @@ function ui_setup(job)
     $("#bottombar").append("<div class='button' id='playbutton'>Play</div> ");
     $("#bottombar").append("<div class='button' id='forwardbutton'> &nbsp; </div> ");
     $("#bottombar").append("<span>Overlay <input type='checkbox' id='show_overlay'/></span> ");
+    $("#bottombar").append("<span>Fastmode <input type='checkbox' id='fast_mode'/></span> ");
 
 
     // subject orientation radio box, added by menglong
@@ -229,6 +230,10 @@ function ui_setupbuttons(job, player, tracks)
     $("#show_overlay").click(function() {
         player.overlay_frame = $("#show_overlay").is(":checked");
         player.updateframe();
+    });
+
+    $("#fast_mode").click(function() {
+        player.playdelta = $("#show_overlay").is(":checked") ? 5 : 1;
     });
 
     $("#rewindbutton").click(function() {
@@ -941,3 +946,4 @@ function ui_enable()
 
     console.log("UI disabled with count = " + ui_disabled);
 }
+
