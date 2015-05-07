@@ -28,6 +28,7 @@ function VideoPlayer(handle, job)
     Server.onFrameReady.push(function(img) {
         me.handle.css("background-image", "url('" + img + "')");
         _callback(me.onready);
+        me.loading_frame = false;
     });
 
     /*
@@ -122,7 +123,6 @@ function VideoPlayer(handle, job)
             if (me.overlay_frame) {
                 Server.getFrame(me.frame, function() {
                     _callback(me.onupdate);
-                    me.loading_frame = false;
                     if (cBack != null)
                         cBack();
                     if (me.need_to_load) {
