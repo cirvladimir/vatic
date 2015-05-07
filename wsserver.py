@@ -140,13 +140,16 @@ class VaticServer(WebSocket):
 		print self.address, 'closed'
 
 
+def runServer():
+	server = SimpleWebSocketServer("", 8532, VaticServer)
 
-server = SimpleWebSocketServer("", 8532, VaticServer)
+	def close_sig_handler(signal, frame):
+		server.close()
+		sys.exit()
 
-def close_sig_handler(signal, frame):
-	server.close()
-	sys.exit()
+	signal.signal(signal.SIGINT, close_sig_handler)
 
-signal.signal(signal.SIGINT, close_sig_handler)
+	server.serveforever()
 
-server.serveforever()
+if __name__ == "__main__":
+    runServer()

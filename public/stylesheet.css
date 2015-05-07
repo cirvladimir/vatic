@@ -7,6 +7,12 @@ body
     user-select: none;
 }
 
+html
+{
+    width: 100%;
+    height: 100%;
+}
+
 label, .button
 {
     font-size : 12px !important;
@@ -130,6 +136,7 @@ code
 #videoframe
 {
     background-color : #000;
+    background-size: 100% 100%;
     display : block;
 }
 

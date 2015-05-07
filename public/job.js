@@ -28,7 +28,14 @@ function Job(data)
         folder2 = parseInt(Math.floor(i / 10000));
         return "frames/" + me.slug + 
             "/" + folder2 + "/" + folder1 + "/" + parseInt(i) + ".jpg";
-    }
+    };
+
+    this.overlay_frameurl = function(i)
+    {
+        folder1 = parseInt(Math.floor(i / 100));
+        folder2 = parseInt(Math.floor(i / 10000));
+        return "/server/overlay_frame/" + i;
+    };
 }
 
 function job_import(data)
@@ -66,35 +73,37 @@ function job_import(data)
     job.actionstop = job.stop;
     //}
 
-    console.log("Job configured!");
-    console.log("  Slug: " + job.slug);
-    console.log("  Start: " + job.start);
-    console.log("  Stop: " + job.stop);
-    console.log("  Width: " + job.width);
-    console.log("  Height: " + job.height);
-    console.log("  Skip: " + job.skip);
-    console.log("  Per Object: " + job.perobject);
-    console.log("  Blow Radius: " + job.blowradius);
-    console.log("  Training: " + job.training);
-    console.log("  Job ID: " + job.jobid);
-    console.log("  Labels: ");
-    for (var i in job.labels)
-    {
-        console.log("    " + i + " = " + job.labels[i]);
-    }
-    console.log("  Attributes:");
-    for (var i in job.attributes)
-    {
-        for (var j in job.attributes[i])
+    if (false) {
+        console.log("Job configured!");
+        console.log("  Slug: " + job.slug);
+        console.log("  Start: " + job.start);
+        console.log("  Stop: " + job.stop);
+        console.log("  Width: " + job.width);
+        console.log("  Height: " + job.height);
+        console.log("  Skip: " + job.skip);
+        console.log("  Per Object: " + job.perobject);
+        console.log("  Blow Radius: " + job.blowradius);
+        console.log("  Training: " + job.training);
+        console.log("  Job ID: " + job.jobid);
+        console.log("  Labels: ");
+        for (var i in job.labels)
         {
-            console.log("    " + job.labels[i] + " = " + job.attributes[i][j])
+            console.log("    " + i + " = " + job.labels[i]);
         }
+        console.log("  Attributes:");
+        for (var i in job.attributes)
+        {
+            for (var j in job.attributes[i])
+            {
+                console.log("    " + job.labels[i] + " = " + job.attributes[i][j])
+            }
+        }
+        //console.log("  orientation: " + job.orientation);
+        console.log("  comment: " + job.comment);
+        console.log("  actionstart: " +job.actionstart);
+        console.log("  actionstop: " + job.actionstop);
+        console.log("  action: " + job.action);
     }
-    //console.log("  orientation: " + job.orientation);
-    console.log("  comment: " + job.comment);
-    console.log("  actionstart: " +job.actionstart);
-    console.log("  actionstop: " + job.actionstop);
-    console.log("  action: " + job.action);
 
     return job;
 }

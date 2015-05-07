@@ -18,6 +18,18 @@ function VideoPlayer(handle, job)
     this.onpause = []; 
     this.onupdate = [];
 
+    this.onloaing = [];
+    this.onready = [];
+
+    this.overlay_frame = false;
+    this.loading_frame = false;
+    this.need_to_load = false;
+
+    Server.onFrameReady.push(function(img) {
+        me.handle.css("background-image", "url('" + img + "')");
+        _callback(me.onready);
+    });
+
     /*
      * Toggles playing the video. If playing, pauses. If paused, plays.
      */
@@ -42,18 +54,24 @@ function VideoPlayer(handle, job)
         {
             console.log("Playing...");
             this.paused = false;
-            this.interval = window.setInterval(function() {
+            var fPlay =  function() {
                 if (me.frame >= me.job.stop)
                 {
                     me.pause();
                 }
                 else
                 {
-                    me.displace(me.playdelta);
+                    var time = new Date().getTime();
+                    me.displace(me.playdelta, function() {
+                        var dt = new Date().getTime() - time;
+                        if (!me.paused)
+                            window.setTimeout(fPlay, 1000 / me.fps - dt); 
+                    });
                 }
-            }, 1. / this.fps * 1000);
+            };
+            fPlay();
 
-            this._callback(this.onplay);
+            _callback(this.onplay);
         }
     }
 
@@ -66,49 +84,67 @@ function VideoPlayer(handle, job)
         {
             console.log("Paused.");
             this.paused = true;
-            window.clearInterval(this.interval);
-            this.interval = null;
 
-            this._callback(this.onpause);
+            _callback(this.onpause);
         }
     }
 
     /*
      * Seeks to a specific video frame.
      */
-    this.seek = function(target)
+    this.seek = function(target, cBack)
     {
         this.frame = target;
-        this.updateframe();
+        this.updateframe(cBack);
     }
 
     /*
      * Displaces video frame by a delta.
      */
-    this.displace = function(delta)
+    this.displace = function(delta, cBack)
     {
         this.frame += delta;
-        this.updateframe();
+        this.updateframe(cBack);
     }
 
     /*
      * Updates the current frame. Call whenever the frame changes.
      */
-    this.updateframe = function()
+    this.updateframe = function(cBack)
     {
-        this.frame = Math.min(this.frame, this.job.stop);
-        this.frame = Math.max(this.frame, this.job.start);
+        me.need_to_load = true;
+        if (!me.loading_frame) {
+            me.need_to_load = false;
+            me.loading_frame = true;
+            me.frame = Math.min(me.frame, me.job.stop);
+            me.frame = Math.max(me.frame, me.job.start);
+            _callback(me.onloaing);
+            if (me.overlay_frame) {
+                Server.getFrame(me.frame, function() {
+                    _callback(me.onupdate);
+                    me.loading_frame = false;
+                    if (cBack != null)
+                        cBack();
+                    if (me.need_to_load) {
+                        me.updateframe();
+                    }
+                });
+            } else {
+                var url = me.job.frameurl(me.frame);
+                me.handle.css("background-image", "url('" + url + "')");
 
-        var url = this.job.frameurl(this.frame);
-        this.handle.css("background-image", "url('" + url + "')");
-
-        this._callback(this.onupdate);
+                _callback(me.onupdate);
+                me.loading_frame = false;
+                if (cBack != null)
+                    cBack();
+            }
+        }
     }
 
     /*
      * Calls callbacks
      */
-    this._callback = function(list)
+    var _callback = function(list)
     {
         for (var i = 0; i < list.length; i++)
         {

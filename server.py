@@ -171,6 +171,23 @@ def sendframe(id, data):
     cont = f.read()
     return cont
 
+
+# import socket
+# TRACKER_TCP_IP = '127.0.0.1'
+# TRACKER_TCP_PORT = 1590
+# BUFFER_SIZE = 1024
+
+# @handler(type="image/jpeg")
+# def overlay_frame(frame):
+#     tracker_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#     tracker_socket.connect((TRACKER_TCP_IP, TRACKER_TCP_PORT))
+#     tracker_socket.send("%d 0" % (int(frame) + 1))
+#     img_size_buff = tracker_socket.recv(4)
+#     img_size = (ord(img_size_buff[0]) << 24) + (ord(img_size_buff[1]) << 16) + (ord(img_size_buff[2]) << 8)+ (ord(img_size_buff[3]))
+#     cont = tracker_socket.recv(img_size)
+#     tracker_socket.close()
+#     return cont    
+
 @handler(post = "json")
 def savejob1(id, data):
     # data contain comment, orientation, tracks

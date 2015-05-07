@@ -63,17 +63,6 @@ function ui_setup(job)
     screen.css("width", "100%");
 
     $("<div class='main-work-div'>" +
-//        "<tr>" +
-//            "<td></td>" +
-//            "<td><div id='instructionsbutton' class='button'>Instructions</div>" +
-//            //<2012-12-03> modified 3 lines for Ben Sapp's application
-//            //"<div id='instructions'>Annotate every visible body joints for the <strong>" +
-//			//job.action.replace(/_/g, " ") +
-//			//"</strong> action across the entire video." +
-//            "<div id='instructions'>Annotate every visible upper body joints across the entire video" +
-//            "<br/> <strong> for the person marked by the green box in the small image on the right side </strong> </td>" +
-//            "<td><div id='topbar'></div></td>" +
-//        "</tr>" +
         "<div class='box-images-div'>" +
            '<img src="labelGT.jpg" display="inline" width="350px"><br/>' +
                                '<img src="labelGT2.jpg" display="inline" width="350px">' +
@@ -96,39 +85,6 @@ function ui_setup(job)
         "<div class='sidebar-div'>" +
             "<div id='sidebar'></div>" +
         "</div>" +
-
-
-
-//        "<tr>" +
-//              "<td>" + + "</td>" +
-//              "<td></td>" +
-//              "<td rowspan='4'></td>" +
-//          "</tr>" +
-//          "<tr>" +
-//            "<td></td>" +
-//
-//              "</td>" +
-//          "</tr>" +
-//          "<tr>" +
-//            "<td></td>" +
-//              "<td><!--<div>Comments:</div>-->" +
-//              "<textarea id='commentarea' />" +
-//              "<div id='submitbar'></div><br/><br/>"+
-//              '<div><ul class="keyboardshortcuts" display="inline" >' +
-//              '<li><code>n</code>  creates a new human joint</li>' +
-//              '<li><code>t</code>  toggles play/pause on the video</li>' +
-//              '<li><code>r</code>  rewinds the video to the start</li>' +
-//              '<li><code>f</code>  jump forward 5 frames</li>' +
-//              '<li><code>d</code>  jump backward 5 frames</li>' +
-//              '<li><code>v</code>  step forward 1 frame</li>' +
-//              '<li><code>c</code>  step backward 1 frame</li>' +
-//              '</ul></div>'+
-//
-//              //'<img src="body_joint_fig.jpg" display="inline" width="350px"></div>' +
-//              //'<img src="boxmodel.png" display="inline" width="350px"></div>' +
-//              "</td>" +
-//          "</tr>" +
-
       "</div>").appendTo(screen).css("width", "100%");
 
 
@@ -152,6 +108,7 @@ function ui_setup(job)
     $("#bottombar").append("<div class='button' id='backwardbutton'> &nbsp;  </div> ");
     $("#bottombar").append("<div class='button' id='playbutton'>Play</div> ");
     $("#bottombar").append("<div class='button' id='forwardbutton'> &nbsp; </div> ");
+    $("#bottombar").append("<span>Overlay <input type='checkbox' id='show_overlay'/></span> ");
 
 
     // subject orientation radio box, added by menglong
@@ -212,10 +169,9 @@ function ui_setup(job)
 
 
     $(".sidebar-div").prepend("<div class='button' id='newobjectbutton'>New Joint</div>");
-    $(".sidebar-div").prepend("<div id='submitbutton' class='button'>Submit HIT</div>");
+    $(".main-video-div").append("<div id='submitbutton' class='button'>Submit HIT</div>");
 
-    $(".sidebar-div").prepend($("<div id='nextFrame' class='button'>nextFrame</div>").css("display", "none"));
-    $(".sidebar-div").prepend("<div id='sendframebutton' class='button'>Send Frame</div>");
+    $(".main-video-div").append("<div id='sendframebutton' class='button'>Send Frame</div>");
 
     if (mturk_isoffline())
 	{
@@ -268,6 +224,11 @@ function ui_setupbuttons(job, player, tracks)
         icons: {
             primary: "ui-icon-play"
         }
+    });
+
+    $("#show_overlay").click(function() {
+        player.overlay_frame = $("#show_overlay").is(":checked");
+        player.updateframe();
     });
 
     $("#rewindbutton").click(function() {
@@ -716,39 +677,6 @@ function ui_loadprevious(job, objectui)
     });
 }
 
-var NEW_LABELS = 'a';
-var FRAME_OK = 'b';
-var NEW_IMAGE = 'c';
-var SEEK_FRAME = 'd';
-var serv_ws = new WebSocket("ws://localhost:8532");
-var ws_handler = function(msg) {
-    if (msg.data[0] == NEW_IMAGE) {
-        $("#videoframe").css("background-image", "url(\"" + "data:image/jpeg;base64," + msg.data.substr(1) + "\")")
-            .css("background-size", "100% 100%");
-        $("#nextFrame").css("display", "inline-block");
-    }
-    if (msg.data[0] == SEEK_FRAME) {
-        $("#nextFrame").css("display", "none");
-        var frame = JSON.parse(msg.data.substr(1)).frame;
-    }
-};
-serv_ws.onmessage = ws_handler;
-var sendMessage = function(data) {
-    if (serv_ws.readyState == serv_ws.OPEN)
-        serv_ws.send(data);
-    else if (serv_ws.readyState == serv_ws.CONNECTING) {
-        var prevOnOpen = serv_ws.onopen;
-        serv_ws.onopen = function() {
-            if (prevOnOpen != null)
-                prevOnOpen();
-            serv_ws.send(data);
-        };
-    } else {
-        serv_ws = new WebSocket("ws://localhost:8532");
-        serv_ws.onmessage = ws_handler;
-        sendMessage(data);
-    }
-};
 
 function ui_setupsubmit(job, tracks, player)
 {
@@ -760,55 +688,20 @@ function ui_setupsubmit(job, tracks, player)
         if (ui_disabled) return;
         ui_submit(job, tracks);
     });
-    $("#nextFrame").button()
-        .click(function() {
-            player.seek(player.frame + 5);
-            data = JSON.stringify({frame: player.frame, tracks: []});
-            sendMessage(NEW_LABELS + data);
-        });
     $("#sendframebutton").button()
         .click(function() {
-            /*var a = tracks;
-            var b = job;
-            var c = player;*/
-
-            var data = JSON.stringify({ frame: player.frame, tracks: tracks.tracks.filter(function(tr) {
+            $("html").loadingimagethingy('enable');
+            var data = { frame: player.frame, tracks: tracks.tracks.filter(function(tr) {
                     return (!tr.deleted) && tr.handle.is(":visible");
-               }).map(function(tr) {
+                }).map(function(tr) {
                     var pos = tr.pollposition();
                     return {label : tr.label, position: {x : (pos.xtl + pos.xbr) / 2 / job.width,
                         y : (pos.ytl + pos.ybr) / 2 / job.height } };
-               })});
-            sendMessage(NEW_LABELS + data);
-
-            
-            // var url = server_geturl("sendframe", [job.jobid]);
-            // console.log("Server post: " + url);
-            // var data = JSON.stringify({ frame: player.frame, tracks: tracks.tracks.filter(function(tr) {
-            //        return (!tr.deleted) && tr.handle.is(":visible");
-            //    }).map(function(tr) {
-            //        return {label : tr.label, position:  tr.pollposition()};
-            //    })});
-
-            // var req = new XMLHttpRequest();
-            // req.open("POST", url, true);
-            // req.contentType = "text/json";
-            // req.responseType = "arraybuffer";
-
-            // req.onload = function (oEvent) {
-            //     var reader = new FileReader();
-            //     reader.onload = function(e) {
-            //         //$("<image height='100' width='100'/>").appendTo(document.body).attr("src", "data:image/jpeg" + e.target.result.substr(5));
-            //         $("#videoframe").css("background-image", "url(\"" + "data:image/jpeg" + e.target.result.substr(5) + "\")")
-            //             .css("background-size", "100% 100%");
-
-            //     };
-            //     var blob = new Blob([req.response]);
-            //     reader.readAsDataURL(blob);
-            // };
-
-            // req.send(data);
-
+                })};
+            Server.sendPoints(data, function() {
+                $("html").loadingimagethingy('disable');
+            });
+            //sendMessage(NEW_LABELS + data);
         });
 }
 
