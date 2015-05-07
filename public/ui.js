@@ -108,7 +108,7 @@ function ui_setup(job)
     $("#bottombar").append("<div class='button' id='backwardbutton'> &nbsp;  </div> ");
     $("#bottombar").append("<div class='button' id='playbutton'>Play</div> ");
     $("#bottombar").append("<div class='button' id='forwardbutton'> &nbsp; </div> ");
-    $("#bottombar").append("<span>Overlay <input type='checkbox' id='show_overlay'/></span> ");
+    $("#bottombar").append("<span>Overlay <input type='checkbox' checked id='show_overlay'/></span> ");
     $("#bottombar").append("<span>Fastmode <input type='checkbox' id='fast_mode'/></span> ");
 
 
@@ -233,7 +233,7 @@ function ui_setupbuttons(job, player, tracks)
     });
 
     $("#fast_mode").click(function() {
-        player.playdelta = $("#show_overlay").is(":checked") ? 5 : 1;
+        player.playdelta = $("#fast_mode").is(":checked") ? 5 : 1;
     });
 
     $("#rewindbutton").click(function() {
@@ -250,7 +250,7 @@ function ui_setupbuttons(job, player, tracks)
 
     $("#forwardbutton").click(function() {
         if (ui_disabled) return;
-        var skip = job.skip > 0 ? job.skip : 1;
+        var skip = player.playdelta;//job.skip > 0 ? player.playdelta : 1;
         player.pause();
         player.displace(skip);
         ui_snaptokeyframe(job, player);
@@ -264,7 +264,7 @@ function ui_setupbuttons(job, player, tracks)
 
     $("#backwardbutton").click(function() {
         if (ui_disabled) return;
-        var skip = job.skip > 0 ? -job.skip : -1;
+        var skip = -player.playdelta;//job.skip > 0 ? -player.playdelta : -1;
         player.pause();
         player.displace(skip);
         ui_snaptokeyframe(job, player);
@@ -695,7 +695,7 @@ function ui_setupsubmit(job, tracks, player)
     });
     $("#sendframebutton").button()
         .click(function() {
-            $("html").loadingimagethingy('enable');
+        //    $("html").loadingimagethingy('enable');
             var data = { frame: player.frame, tracks: tracks.tracks.filter(function(tr) {
                     return (!tr.deleted) && tr.handle.is(":visible");
                 }).map(function(tr) {
@@ -704,7 +704,7 @@ function ui_setupsubmit(job, tracks, player)
                         y : (pos.ytl + pos.ybr) / 2 / job.height } };
                 })};
             Server.sendPoints(data, function() {
-                $("html").loadingimagethingy('disable');
+          //      $("html").loadingimagethingy('disable');
             });
             //sendMessage(NEW_LABELS + data);
         });

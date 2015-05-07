@@ -21,7 +21,7 @@ function VideoPlayer(handle, job)
     this.onloaing = [];
     this.onready = [];
 
-    this.overlay_frame = false;
+    this.overlay_frame = true;
     this.loading_frame = false;
     this.need_to_load = false;
 

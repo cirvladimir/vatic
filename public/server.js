@@ -3,11 +3,19 @@ var ServerClass = function() {
 	var FRAME_OK = 'b';
 	var NEW_IMAGE = 'c';
 	var SEEK_FRAME = 'd';
-	var serv_ws = new WebSocket("ws://localhost:8532");
+	var serv_ws = new WebSocket("ws://" + window.location.host + ":8532");
 	var self = this;
+
+	var buffer = [];
+	var MAX_BUFFER = 100;
+
 	var ws_handler = function(msg) {
 	    if (msg.data[0] == NEW_IMAGE) {
-	    	self.onFrameReady.forEach(function(f) { f("data:image/jpeg;base64," + msg.data.substr(1)); });
+	    	var data = "data:image/jpeg;base64," + msg.data.substr(1);
+	    	buffer.push({frame: queryFrame, data: data});
+	    	if (buffer.length > MAX_BUFFER)
+	    		buffer.splice(0, MAX_BUFFER - buffer.length);
+	    	self.onFrameReady.forEach(function(f) { f(data); });
 	        // $("#videoframe").css("background-image", "url(\"" + "data:image/jpeg;base64," + msg.data.substr(1) + "\")")
 	        //     .css("background-size", "100% 100%");
 	        // $("#nextFrame").css("display", "inline-block");
@@ -32,19 +40,33 @@ var ServerClass = function() {
 	            serv_ws.send(data);
 	        };
 	    } else {
-	        serv_ws = new WebSocket("ws://localhost:8532");
+	        serv_ws = new WebSocket("ws://" + window.location.host + ":8532");
 	        serv_ws.onmessage = ws_handler;
 	        sendMessage(data);
 	    }
 	};
 	var callBack;
+	var queryFrame = 0;
 
 	this.getFrame = function(frame, cBack) {
-		sendMessage(NEW_LABELS + JSON.stringify({frame: frame, tracks: []}));
-		callBack = cBack;
+		var bf = buffer.reduce(function(acc, bf) { 
+			return bf.frame == frame ? bf : acc;
+		}, null);
+		if (bf == null) {
+			queryFrame = frame;
+			sendMessage(NEW_LABELS + JSON.stringify({frame: frame, tracks: []}));
+			callBack = cBack;	
+		} else {
+			self.onFrameReady.forEach(function(f) { f(bf.data); });
+			cBack();
+		}
 	};
 
 	this.sendPoints = function(data, cBack) {
+		buffer = buffer.filter(function(bf) { 
+			return bf.frame < data.frame;
+		});
+		queryFrame = data.frame;
 		callBack = cBack;
 		sendMessage(NEW_LABELS + JSON.stringify(data));
 	};
