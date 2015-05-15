@@ -14,6 +14,8 @@ import json, base64
 
 import _mysql
 
+import struct
+
 db = _mysql.connect('localhost', 'root', '', 'vatic')
 
 WAITING = 0
@@ -85,6 +87,31 @@ class VaticServer(WebSocket):
 		tracker_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		tracker_socket.connect((TRACKER_TCP_IP, TRACKER_TCP_PORT))
 		tracker_socket.send("%d %d %s %s" % (data['frame'] + 1, num_points, point_inds, str_xys))
+		
+		pose_matrix_buf = tracker_socket.recv(8*16)
+		
+		pose_matrix = struct.unpack("dddddddddddddddd", pose_matrix_buf)
+
+
+
+		
+
+		query_vals = ""
+		query_labs = ""
+
+		for i in range(0, 4):
+			for j in range(0, 4):
+				query_vals += ", %f" % pose_matrix[i * 4 + j]
+				query_labs += ", pose%d%d" % (i, j)
+
+
+		# print("INSERT INTO object_poses (object_id, frame%s) VALUES (1, %d%s)" % (query_labs, data['frame'], query_vals))
+		con.query("DELETE FROM object_poses WHERE object_id=1 and frame=%d" % data['frame'])
+		con.query("INSERT INTO object_poses (object_id, frame%s) VALUES (1, %d%s)" % (query_labs, data['frame'], query_vals))
+
+		
+
+		# get acual image
 		img_size_buff = tracker_socket.recv(4)
 		img_size = (ord(img_size_buff[0]) << 24) + (ord(img_size_buff[1]) << 16) + (ord(img_size_buff[2]) << 8)+ (ord(img_size_buff[3]))
 		print(img_size)
@@ -99,7 +126,7 @@ class VaticServer(WebSocket):
 		# os.system(args)
 
 
-
+		con.close()
 		# f = open('/home/user/ObjRecognition/build/dartpose.jpg', 'rb')
 		# cont = f.read()
 		b64img = base64.b64encode(cont)
